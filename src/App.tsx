@@ -9,33 +9,23 @@ export default function App() {
   useEffect(() => {
     const bootTimeout = window.setTimeout(() => {
       if (!hasBooted.current) setBootError(true)
-    }, 12000)
+    }, 8000)
 
     const checkRuntime = () => {
       const root = document.querySelector<HTMLElement>('#dc-root')
-      if (!root) {
-        setReady(false)
-        return
-      }
+      if (!root || hasBooted.current) return
 
       const hasRawTemplateText = root.textContent?.includes('{{') ?? false
-      const orbitCount = Array.from(root.querySelectorAll<HTMLElement>('.hub-stage *')).filter(
-        (element) => element.style.animationName === 'orbit',
-      ).length
-      const sectionsAreReady =
-        root.querySelectorAll('.pricing-grid > *').length === 3 &&
-        root.querySelectorAll('.step-item').length === 3 &&
-        root.querySelectorAll('#faq button').length === 6 &&
-        root.querySelectorAll('.mq-item').length >= 14 &&
-        orbitCount === 5
+      const heading = root.querySelector('h1')?.textContent?.trim()
+      const runtimeHasRendered = Boolean(heading) && !hasRawTemplateText
 
-      const healthy = !hasRawTemplateText && sectionsAreReady
-      if (healthy) {
+      if (runtimeHasRendered) {
         hasBooted.current = true
         window.clearTimeout(bootTimeout)
         setBootError(false)
+        setReady(true)
+        observer.disconnect()
       }
-      setReady(hasBooted.current && healthy)
     }
 
     const observer = new MutationObserver(checkRuntime)
